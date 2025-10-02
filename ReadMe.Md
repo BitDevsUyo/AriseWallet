@@ -10,7 +10,7 @@ Arise Wallet is an open-source initiative by the BitDevsUyo community. The goal 
 
 We currently maintain two main branches for development:
 
-- `reactnative` → For React Native contributors
+- `reactnative/dev` → For React Native contributors
 - `flutter/dev` → For Flutter contributors
 
 ---
@@ -44,7 +44,7 @@ cd AriseWallet
 Check out the correct branch for your stack:
 
 ```bash
-git checkout reactnative   # for React Native work
+git checkout reactnative/dev   # for React Native work
 git checkout flutter/dev   # for Flutter work
 ```
 
@@ -81,7 +81,7 @@ Closes #12
 
 - Always link your Pull Request to an issue so we can track work.
 - Use clear commit messages (e.g. `feat: add wallet creation`, `fix: bug in transaction signing`).
-- Follow the branch coding style (`reactnative` or `flutter/dev`).
+- Follow the branch coding style (`reactnative/dev` or `flutter/dev`).
 
 
 
