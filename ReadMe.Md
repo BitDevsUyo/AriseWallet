@@ -2,7 +2,7 @@
 
 **A BitDevsUyo community project**
 
-Arise Wallet is an open-source initiative by the BitDevsUyo community. The goal is to build a Bitcoin wallet while encouraging collaboration and learning across multiple stacks.
+Arise Wallet is an open-source initiative by the BitDevsUyo community. The goal is to build a Bitcoin non-custodial wallet while encouraging hands-on application of what we learn during our monthly socratic seminar,collaboration and learning across multiple stacks.
 
 ---
 
