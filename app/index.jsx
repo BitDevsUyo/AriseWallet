@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View, TouchableOpacity, ImageBackground, Image } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, ImageBackground, Image } from 'react-native'
 import { Link } from 'expo-router'
 import styles from './styles/homeStyles';
 import React from 'react'
@@ -18,14 +18,14 @@ const Home = () => {
             </View>
             <View style={styles.contentWrapper}>
                 <Text style={styles.contentText}>
-                    Secure. Simple. Bitcoin made easy.
+                    Secure. Simple. Bitcoin <Text style={styles.innerText}>made easy.</Text>
                 </Text>
             </View>
 
 
             <View style={styles.bottomLayout}>
                 <Text style={styles.bottomText}>
-                    By tapping any button you agree and consent to our Terms of Services and Privacy Policy.
+                    By tapping any button you agree and consent to our <Text style={styles.inner}>Terms of Services</Text> and <Text style={styles.inner}>Privacy Policy.</Text>
                 </Text>
 
                 <TouchableOpacity style={styles.primaryButton}>

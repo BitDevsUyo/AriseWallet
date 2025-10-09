@@ -60,15 +60,15 @@ const styles = StyleSheet.create({
     },
 
     bottomText: {
-        width: 336,
+        width: 300,
         height: 34,
         fontStyle: 'SF Pro Rounded',
         fontWeight: '400',
         fontSize: 14,
-        lineHeight: 14,
+        // lineHeight: 14,
         letterSpacing: 0,
         textAlign: 'left',
-        color: '#fff',
+        color: '#666666',
     },
 
     primaryButton: {
@@ -109,6 +109,14 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#fff',
     },
+
+    innerText: {
+        color: '#666',
+    },
+
+    inner: {
+        color: '#fff',
+    }
 
 })
 
