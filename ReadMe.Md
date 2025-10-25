@@ -83,6 +83,75 @@ Closes #12
 - Use clear commit messages (e.g. `feat: add wallet creation`, `fix: bug in transaction signing`).
 - Follow the branch coding style (`reactnative/dev` or `flutter/dev`).
 
+### Commit Message Guidelines
+
+We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification for our commit messages. This helps maintain a clear and consistent history of changes.
+
+#### Format
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+#### Types
+- **feat**: A new feature
+- **fix**: A bug fix
+- **docs**: Documentation only changes
+- **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- **refactor**: A code change that neither fixes a bug nor adds a feature
+- **perf**: A code change that improves performance
+- **test**: Adding missing tests or correcting existing tests
+- **chore**: Changes to the build process or auxiliary tools and libraries
+
+#### Examples
+```bash
+feat: add wallet creation functionality
+fix: resolve transaction signing bug
+docs: update contribution guidelines
+style: format code according to project standards
+refactor: simplify wallet initialization logic
+perf: optimize transaction processing
+test: add unit tests for wallet creation
+chore: update dependencies
+```
+
+#### Scope (Optional)
+Use scope to indicate the area of the codebase affected:
+- `wallet`: Wallet-related functionality
+- `ui`: User interface components
+- `api`: API endpoints and services
+- `security`: Security-related changes
+- `config`: Configuration files
+
+#### Examples with Scope
+```bash
+feat(wallet): add multi-signature support
+fix(ui): resolve button alignment issue
+docs(api): update endpoint documentation
+```
+
+#### Breaking Changes
+If your commit introduces a breaking change, add `!` after the type/scope and include a `BREAKING CHANGE:` footer:
+
+```bash
+feat!: redesign wallet architecture
+
+BREAKING CHANGE: The wallet initialization API has changed. 
+The `initWallet()` function now requires a configuration object.
+```
+
+#### Best Practices
+1. **Keep the subject line under 50 characters**
+2. **Use the imperative mood** ("add feature" not "added feature")
+3. **Capitalize the subject line**
+4. **Do not end the subject line with a period**
+5. **Use the body to explain what and why, not how**
+6. **Wrap the body at 72 characters**
+7. **Use the footer to reference issues** (e.g., "Closes #123")
+
 
 
 ## Community
