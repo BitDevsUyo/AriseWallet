@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#000',
+        backgroundColor: '#0D0D0D',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
@@ -19,13 +19,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 
-    overlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-    },
+    // overlay: {
+    //     ...StyleSheet.absoluteFillObject,
+    //     backgroundColor: 'rgba(0,0,0,0.4)',
+    // },
 
     contentWrapper: {
-        position: 'absolute', // so it sits on top of background + overlay
+        position: 'absolute', 
         justifyContent: 'center',
         alignItems: 'center',
         width: '90%',
