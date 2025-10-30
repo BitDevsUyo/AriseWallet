@@ -15,12 +15,13 @@ class Walletprovider with ChangeNotifier {
     _isloading = true;
     notifyListeners();
     try {
-      final walletdata = await WalletService().createBitcoinWallet(network);
+      final walletdata = await WalletService().createBitcoinWallet(network: network);
       debugPrint('Wallet data response: $walletdata');
       _usersWalletData = Usersdatamodels(
         walletdata['mnemonic'],
         walletdata['bitcoin_address'],
-        walletdata['bitcoin_descriptor'],
+        walletdata['bitcoin_externaldescriptor'],
+        walletdata['bitcoin_internaldescriptor'],
         walletdata['bitcoin_transactions_history'],
         walletdata['bitcoin_bal'],
       );
