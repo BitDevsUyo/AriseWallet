@@ -196,7 +196,7 @@ class _IntroscreenState extends State<Introscreen> {
                         child: walletprovider.isloading
                             ? CircularProgressIndicator(color: kblackcolor)
                             : Text(
-                                'Create Wallet',
+                                'Create a wallet',
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 15,
@@ -211,7 +211,7 @@ class _IntroscreenState extends State<Introscreen> {
                 );
               },
             ),
-            GestureDetector(
+           GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
