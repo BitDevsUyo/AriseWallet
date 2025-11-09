@@ -40,6 +40,10 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   bdk_flutter: ^0.30.0
   flutter_rust_bridge: ^1.82.3
+  local_auth: ^2.3.0
+  smooth_page_indicator: ^1.2.1
+  encrypt: ^5.0.3
+  crypto: ^3.0.6
 
 dependency_overrides:
   flutter_rust_bridge: ^1.82.3
