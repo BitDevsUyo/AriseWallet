@@ -1,3 +1,7 @@
+import 'react-native-get-random-values';
+import { Buffer } from 'buffer';
+global.Buffer = Buffer;
+
 import * as bip39 from 'bip39';
 import * as bitcoin from 'bitcoinjs-lib';
 import * as SecureStore from 'expo-secure-store';

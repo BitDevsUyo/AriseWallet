@@ -1,10 +1,13 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, Switch } from 'react-native'
-import { Link } from 'expo-router'
-import React, { useState } from 'react'
-import styles from './styles/secureStyles'
+import { StyleSheet, Text, View, Image, TouchableOpacity, Switch } from 'react-native';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import React, { useState } from 'react';
+import styles from './styles/secureStyles';
 
 const secure = () => {
-
+    const router = useRouter();
+    const { mnemonic } = useLocalSearchParams()
     const [isEnabled, setIsEnabled] = useState(false);
 
     // Function to toggle the switch
@@ -26,8 +29,8 @@ const secure = () => {
                     <View style={styles.biometrics}>
                         <View style={styles.enable}>
                             <Image source={require('./assets/scan-face.png')} style={styles.scanImg} />
-                            <Text style={styles.biometricText}>Enable biometrics</Text> 
-                                {/* {isEnabled ? "On" : "Off"} */}
+                            <Text style={styles.biometricText}>Enable biometrics</Text>
+                            {/* {isEnabled ? "On" : "Off"} */}
                         </View>
 
                         <Switch
@@ -43,8 +46,14 @@ const secure = () => {
 
                 </View>
 
-                <TouchableOpacity style={styles.primaryButton}>
-                    <Link href="/recovery" style={styles.primaryButtonText}>Proceed</Link>
+                <TouchableOpacity
+                    style={styles.primaryButton}
+                    onPress={() => router.push({
+                        pathname: "/recovery",
+                        params: { mnemonic }
+                    })}
+                >
+                    <Text style={styles.primaryButtonText}>Proceed</Text>
                 </TouchableOpacity>
 
             </View>
