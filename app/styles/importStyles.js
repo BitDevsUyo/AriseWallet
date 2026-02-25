@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import {spacing, colors, radii} from '../../src/theme'
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#0D0D0D',
@@ -77,6 +78,51 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#fff',
     },
+
+     modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(10, 10, 10, 0.95)',
+        justifyContent: 'center',
+        paddingHorizontal: spacing.xl,
+      },
+      modalContent: {
+        alignItems: 'flex-start',
+      },
+      modalText: {
+        color: colors.text.primary,
+        fontSize: 26,
+        fontWeight: '600',
+        marginBottom: spacing.xs,
+      },
+      modalSubText: {
+        color: colors.text.midgrey,
+        fontSize: 16,
+        lineHeight: 24,
+      },
+    
+      spinnerContainer: {
+        width: 64,
+        height: 64,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.xl,
+      },
+      iconCenter: {
+        position: 'absolute',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+      },
+      thinSpinner: {
+        position: 'absolute',
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.15)',
+        borderTopColor: '#ffffff',
+        zIndex: 2,
+      },
 
 });
 

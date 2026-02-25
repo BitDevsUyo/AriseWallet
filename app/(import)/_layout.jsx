@@ -28,6 +28,8 @@ const _layout = () => {
                     </TouchableOpacity>)
             }} />
 
+            <Stack.Screen name='success' options={{title: '', }} />
+
             <Stack.Screen name="recovery" 
             options={{
                 title: '', 

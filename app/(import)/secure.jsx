@@ -47,7 +47,7 @@ const secure = () => {
                 <TouchableOpacity
                     style={styles.primaryButton}
                     onPress={() => router.push({
-                        pathname: "/#",
+                        pathname: "/success",
                     })}
                 >
                     <Text style={styles.primaryButtonText}>Proceed</Text>
