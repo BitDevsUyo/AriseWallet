@@ -1,7 +1,8 @@
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, } from 'react-native'
 import { useRouter } from 'expo-router'
-import React from 'react'
-import styles from './styles/importStyles'
+import React, {useState} from 'react'
+import styles from '../styles/importStyles'
+
 
 const Import = () => {
   const router = useRouter();
@@ -27,7 +28,7 @@ const Import = () => {
 
         <TouchableOpacity
           style={styles.primaryButton}
-          onPress={() => router.push("/#")}
+          onPress={() => router.push("/secure")}
         >
           <Text style={styles.primaryButtonText}>Import Recovery Phrase</Text>
         </TouchableOpacity>

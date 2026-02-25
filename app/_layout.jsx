@@ -3,7 +3,6 @@ import { Stack, useRouter } from 'expo-router'
 import React from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { colors } from "../constants/colors"
-import HeaderIndicator from "../components/headerIndicator";
 
 
 const _layout = () => {
@@ -15,27 +14,9 @@ const _layout = () => {
         <Stack screenOptions={{ headerStyle: { backgroundColor: '#0D0D0D' }, headerTintColor: '#666666' }}>
 
             <Stack.Screen name="index" options={{ headerShown: false, }} />
-            <Stack.Screen name="secure" 
-            options={{
-                title: '', 
-                headerTitle: () =>  <View style={{ flex: 1, alignItems: "center", justifyContent: 'center' }}><HeaderIndicator active={1}/></View>, 
-                headerRight: () => (
-                    <TouchableOpacity style={styles.next} onPress={() => router.push("/recovery")} >
-                        <Text style={{ color: "#fff", fontSize: 16 }}>Next</Text>
-                    </TouchableOpacity>)
-            }} />
-
-            <Stack.Screen name="recovery" 
-            options={{
-                title: '', 
-                headerTitle: () => <View style={{ flex: 1, alignItems: "center", justifyContent: 'center' }}><HeaderIndicator active={2}/></View>, 
-                headerRight: () => (
-                    <TouchableOpacity style={styles.next} onPress={() => router.push("/import")} >
-                        <Text style={{ color: "#fff", fontSize: 16, alignItems: 'center' }}>Next</Text>
-                    </TouchableOpacity>)
-            }} />
-
-            <Stack.Screen name="import" options={{ title: '' }} />
+            <Stack.Screen name="welcome" options={{ headerShown: false, }} />
+            <Stack.Screen name="(create)" options={{ headerShown: false }} />
+            <Stack.Screen name="(import)" options={{ headerShown: false }} />
 
         </Stack>
 

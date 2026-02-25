@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ohotuowomorgan.bitdevwallet"
+      "bundleIdentifier": "com.ohotuowomorgan.bitdevwallet",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Arise Wallet uses Face ID to securely authenticate and unlock your Bitcoin wallet."
+      }
     },
     "android": {
       "adaptiveIcon": {

@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     },
 
     enable: {
-        width: 145,
+        // width: 145,
         height: 24,
         gap: 10,
         flexDirection: 'row',
@@ -114,6 +114,9 @@ const styles = StyleSheet.create({
         lineHeight: 24,
         color: '#fff',
     },
+    choiceBox:{
+        gap: 20,
+    }
 
 });
 
