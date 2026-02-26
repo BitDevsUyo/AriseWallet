@@ -34,8 +34,7 @@ cd AriseWallet
 
 ### 3. Install Dependencies
 npm install
-# or
-yarn install
+
 
 ### 4 Run application
 Expo  - npx expo start
