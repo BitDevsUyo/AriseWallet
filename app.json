@@ -1,8 +1,8 @@
 {
   "expo": {
-    "scheme": "bitdevwallet",
-    "name": "bitdevwallet",
-    "slug": "bitdevwallet",
+    "scheme": "AriseWallet",
+    "name": "AriseWallet",
+    "slug": "AriseWallet",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
