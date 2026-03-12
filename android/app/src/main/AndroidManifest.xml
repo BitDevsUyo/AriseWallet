@@ -1,7 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.bitdevs_project">
+    
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    
     <uses-feature
         android:name="android.hardware.fingerprint"
         android:required="false" />
@@ -9,7 +13,8 @@
     <application
         android:name="${applicationName}"
         android:label="bitdevs_project"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        tools:replace="android:label">
 
         <activity
             android:name=".MainActivity"

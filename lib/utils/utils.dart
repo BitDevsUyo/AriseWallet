@@ -21,12 +21,10 @@ class EncryptServices {
 class BiometricService {
   final LocalAuthentication auth = LocalAuthentication();
 
-  /// Check if device has biometric hardware available
   Future<bool> canCheckBiometrics() async {
     return await auth.canCheckBiometrics;
   }
 
-  /// Authenticate user with fingerprint / face
   Future<bool> authenticateUser() async {
     try {
       final isAuthenticated = await auth.authenticate(

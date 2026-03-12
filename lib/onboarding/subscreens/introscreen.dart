@@ -2,13 +2,15 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitdevs_project/customutils/customitems.dart';
-import 'package:bitdevs_project/onboarding/statemanagement/walletprovider.dart';
 import 'package:bitdevs_project/onboarding/subscreens/proceedscreen.dart';
 import 'package:bitdevs_project/onboarding/subscreens/restorewalletscreen.dart';
 import 'package:bitdevs_project/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
+import '../statemanagement/wallet_controller.dart';
+
 
 class Introscreen extends StatefulWidget {
   const Introscreen({super.key});
@@ -50,7 +52,6 @@ class _IntroscreenState extends State<Introscreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     String currentText = fullText.substring(0, visibleChars);
-
     return Scaffold(
       backgroundColor: kblackcolor,
       body: SingleChildScrollView(
@@ -80,15 +81,14 @@ class _IntroscreenState extends State<Introscreen> {
                   color: kblackcolor.withOpacity(0.4),
                 ),
                 SizedBox(
-                  height: size.height / 1.5,
+                  height: size.height / 1.6,
                   width: size.width,
                   child: Column(
                     children: [
                       const Spacer(),
                       Padding(
                         padding: const EdgeInsets.only(
-                          left: 16,
-                          bottom: 20,
+                          bottom: 0,
                           right: 16,
                         ),
                         child: RichText(
@@ -120,13 +120,12 @@ class _IntroscreenState extends State<Introscreen> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 10),
                       Padding(
                         padding: const EdgeInsets.only(
-                          left: 16,
-                          bottom: 14,
+                          left: 20,
+                          bottom: 20,
                           right: 16,
-                          top: 25,
+                          top: 8,
                         ),
                         child: RichText(
                           textAlign: TextAlign.start,
@@ -162,17 +161,16 @@ class _IntroscreenState extends State<Introscreen> {
                 ),
               ],
             ),
-            SizedBox(height: 30),
-            Consumer<Walletprovider>(
-              builder: (context, walletprovider, state) {
+            Consumer<WalletProvider>(
+              builder: (context, walletProvider, child) {
                 return GestureDetector(
-                  onTap: walletprovider.isloading
+                  onTap: walletProvider.isLoading
                       ? null
                       : () async {
-                          await walletprovider.createWallet(
-                            network: Network.Testnet,
+                          final mnemonic = await walletProvider.createWallet(
+                            network: Network.testnet,
                           );
-                          if (walletprovider.usersWalletData != null) {
+                          if (mnemonic.isNotEmpty) {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               Navigator.push(
                                 context,
@@ -184,16 +182,16 @@ class _IntroscreenState extends State<Introscreen> {
                           }
                         },
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 30,left: 15,right: 15),
+                    padding: const EdgeInsets.only(top: 15, left: 15, right: 15),
                     child: customContainer(
                       size.height / 16,
-                      double.infinity,
+                      size.width * 0.9,
                       BoxDecoration(
                         borderRadius: BorderRadius.circular(25),
                         color: korangeColor,
                       ),
                       Center(
-                        child: walletprovider.isloading
+                        child: walletProvider.isLoading
                             ? CircularProgressIndicator(color: kblackcolor)
                             : Text(
                                 'Create a wallet',
@@ -211,7 +209,7 @@ class _IntroscreenState extends State<Introscreen> {
                 );
               },
             ),
-           GestureDetector(
+            GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
@@ -225,8 +223,8 @@ class _IntroscreenState extends State<Introscreen> {
               child: Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: customContainer(
-                  size.height / 15,
-                double.infinity,
+                  size.height / 20,
+                  size.width * 0.9,
                   BoxDecoration(
                     borderRadius: BorderRadius.circular(25),
                     color: kdarkgraycolor,

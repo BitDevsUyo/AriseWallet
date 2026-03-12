@@ -1,7 +1,7 @@
-// ignore_for_file: sort_child_properties_last, use_build_context_synchronously
-
+// ignore_for_file: sort_child_properties_last
 import 'package:bitdevs_project/customutils/customitems.dart';
-import 'package:bitdevs_project/onboarding/statemanagement/walletprovider.dart';
+import 'package:bitdevs_project/onboarding/statemanagement/wallet_controller.dart';
+import 'package:bitdevs_project/onboarding/subscreens/namewalletscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:bitdevs_project/theme/colors.dart';
 import 'package:flutter/services.dart';
@@ -30,11 +30,12 @@ class _ProceedscreenState extends State<Proceedscreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: kblackcolor,
       appBar: AppBar(
         backgroundColor: kblackcolor,
-        iconTheme: IconThemeData(color: kwhitecolors),
+        iconTheme: IconThemeData(color: theme.colorScheme.surfaceBright),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -43,10 +44,8 @@ class _ProceedscreenState extends State<Proceedscreen> {
                 padding: const EdgeInsets.only(left: 90),
                 child: SmoothPageIndicator(
                   controller: _pageController,
-                  
                   count: 2,
                   effect: ExpandingDotsEffect(
-                    
                     activeDotColor: kwhitecolors,
                     dotColor: Colors.grey.shade700,
                     dotHeight: 10,
@@ -59,9 +58,17 @@ class _ProceedscreenState extends State<Proceedscreen> {
             Padding(
               padding: const EdgeInsets.only(left: 90),
               child: InkWell(
-                
                 onTap: () => _goToNextPage(),
-                child: Text("Next", style: TextStyle(color: kwhitecolors))),
+                child: Text(
+                  "Next",
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontSize: 18,
+                    color: kwhitecolors,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: "Aeonik",
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -73,7 +80,7 @@ class _ProceedscreenState extends State<Proceedscreen> {
               physics: NeverScrollableScrollPhysics(),
               controller: _pageController,
               onPageChanged: (index) => setState(() => _currentPage = index),
-              children: [ _buildNextStepPage(),_buildFingerprintPage(),],
+              children: [_buildNextStepPage(), _buildConfirmPage()],
             ),
           ),
         ],
@@ -81,110 +88,224 @@ class _ProceedscreenState extends State<Proceedscreen> {
     );
   }
 
-  Widget _buildFingerprintPage() {
+  int _confirmStep = 0;
+  int? _selectedOption;
+  late List<int> _questionPositions;
+  bool _confirmInitialized = false;
+
+  void _initConfirm(List<String> words) {
+    if (_confirmInitialized) return;
+    final positions = List.generate(12, (i) => i)..shuffle();
+    _questionPositions = positions.take(5).toList();
+    _confirmInitialized = true;
+  }
+
+  void _resetConfirm() {
+    setState(() {
+      _confirmStep = 0;
+      _selectedOption = null;
+      _confirmInitialized = false;
+    });
+  }
+
+  List<String> _buildOptions(List<String> words, int correctIndex) {
+    final correct = words[correctIndex];
+    final others = List<String>.from(words)
+      ..remove(correct)
+      ..shuffle();
+    final fakes = others.take(4).toList();
+    final options = [correct, ...fakes]..shuffle();
+    return options;
+  }
+
+  Widget _buildConfirmPage() {
+    final walletProvider = Provider.of<WalletProvider>(context);
+    final mnemonic = walletProvider.pendingMnemonic ??
+        walletProvider.walletData?.mnemonic ??
+        "";
+    final words = mnemonic.split(" ");
+    final theme = Theme.of(context);
+
+    if (words.length < 12) {
+      return Center(
+        child: Text("No mnemonic found", style: TextStyle(color: Colors.grey)),
+      );
+    }
+    _initConfirm(words);
+    final wordIndex = _questionPositions[_confirmStep];
+    final wordNumber = wordIndex + 1;
+    final options = _buildOptions(words, wordIndex);
+    final correctWord = words[wordIndex];
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              customContainer(
-                250,
-                300,
-                BoxDecoration(
-                  color: kblackcolor,
-                  image: const DecorationImage(
-                    image: AssetImage('assets/padlock.png'),
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                const SizedBox(),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: const Text(
-                  'Protect your wallet',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 3),
-
+          const SizedBox(height: 10),
           Text(
-            'Adding biometric security to your wallet will ensure that your wallet is accessible by you.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 17,
-              height: 1,
-              wordSpacing: 1,
+            'Confirm Recovery Phrase',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontSize: 25,
+              color: kwhitecolors,
+              fontWeight: FontWeight.w700,
+              fontFamily: "Aeonik",
             ),
           ),
-
-          const SizedBox(height: 40),
-          customContainer(
-            60,
-            double.infinity,
-            BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: kdarkgraycolor,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Image.asset('assets/biometrics.png'),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                'What was the word ',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 14,
+                  color: kbuttonGraycolor,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: "Aeonik",
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Switch(
-                    value: true,
-                    onChanged: (value) {
-                      setState(() {});
+              ),
+              Text(
+                '${_ordinal(wordNumber)} ',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 14,
+                  color: korangeColor,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: "Aeonik",
+                ),
+              ),
+              Text(
+                'In your recovery phrase?',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 14,
+                  color: kbuttonGraycolor,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: "Aeonik",
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: List.generate(5, (i) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.only(right: 6),
+                height: 6,
+                width: i == _confirmStep ? 24 : 8,
+                decoration: BoxDecoration(
+                  color: i < _confirmStep
+                      ? korangeColor
+                      : i == _confirmStep
+                          ? kwhitecolors
+                          : kbuttonGraycolor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 30),
+          ...List.generate(options.length, (i) {
+            final isSelected = _selectedOption == i;
+            return GestureDetector(
+              onTap: _selectedOption != null
+                  ? null
+                  : () async {
+                      setState(() => _selectedOption = i);
+                      final picked = options[i];
+                      await Future.delayed(const Duration(milliseconds: 350));
+                      if (picked == correctWord) {
+                        if (_confirmStep < 4) {
+                          setState(() {
+                            _confirmStep++;
+                            _selectedOption = null;
+                          });
+                        } else {
+                          setState(() {});
+                        }
+                      } else {
+                        showCustomSnackBar(
+                          context,
+                          "Wrong word! Please start over.",
+                        );
+                        await Future.delayed(const Duration(milliseconds: 500));
+                        _resetConfirm();
+                      }
                     },
-                    activeColor: kwhitecolors,
-                    inactiveThumbColor: Colors.grey,
-                  ),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 25,
                 ),
-              ],
-            ),
-          ),
-          SizedBox(height: 120),
+                decoration: BoxDecoration(
+                  color: kdarkgraycolor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(width: 1.5),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      options[i],
+                      style: TextStyle(
+                        color: isSelected ? korangeColor : kwhitecolors,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: "Aeonik",
+                      ),
+                    ),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      height: 20,
+                      width: 22,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected ? korangeColor : kgraycolor,
+                          width: 2,
+                        ),
+                        color: isSelected ? korangeColor : ktransparentcolor,
+                      ),
+                      child: isSelected
+                          ? Icon(Icons.check, size: 14, color: kwhitecolors)
+                          : null,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+          SizedBox(height: 20),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.only(top: 20),
             child: GestureDetector(
-              onTap: ()=>_goToNextPage(),
+              onTap: _confirmStep == 4 && _selectedOption != null
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => Namewalletscreen()),
+                      );
+                    }
+                  : null,
               child: customContainer(
-                50,
+                55,
                 double.infinity,
                 BoxDecoration(
                   borderRadius: BorderRadius.circular(25),
-                  color: korangeColor,
+                  color: _confirmStep == 4 && _selectedOption != null
+                      ? korangeColor
+                      : kbuttonGraycolor,
                 ),
                 Center(
                   child: Text(
-                    'Proceed',
+                    'Continue',
                     style: TextStyle(
                       color: kwhitecolors,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
+                      fontFamily: "Aeonik",
                     ),
                   ),
                 ),
@@ -196,10 +317,28 @@ class _ProceedscreenState extends State<Proceedscreen> {
     );
   }
 
+  String _ordinal(int n) {
+    if (n >= 11 && n <= 13) return "${n}th";
+    switch (n % 10) {
+      case 1:
+        return "${n}st";
+      case 2:
+        return "${n}nd";
+      case 3:
+        return "${n}rd";
+      default:
+        return "${n}th";
+    }
+  }
+
+
   Widget _buildNextStepPage() {
-    final walletProvider = Provider.of<Walletprovider>(context);
-    final mnemonic = walletProvider.usersWalletData?.mnemonic ?? "";
+    final walletProvider = Provider.of<WalletProvider>(context);
+    final mnemonic = walletProvider.pendingMnemonic ??
+        walletProvider.walletData?.mnemonic ??
+        "";
     final mnemonicswords = mnemonic.split(" ");
+    final theme = Theme.of(context);
 
     return SingleChildScrollView(
       child: Column(
@@ -212,7 +351,12 @@ class _ProceedscreenState extends State<Proceedscreen> {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   'Recovery Phrase',
-                  style: TextStyle(color: kwhitecolors, fontSize: 24),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontSize: 24,
+                    color: kwhitecolors,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: "Aeonik",
+                  ),
                 ),
               ),
             ],
@@ -220,26 +364,30 @@ class _ProceedscreenState extends State<Proceedscreen> {
           Row(
             children: [
               SizedBox(
-                width: 410,
+                width: 380,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8),
                   child: Text(
-                    'This is the only way you will be able to recover your account.\nPlease store it somewhere Safe!',
-                    style: TextStyle(color: kwhitecolors, fontSize: 14),
+                    'This is the only way you will be able to recover your account. Please store it somewhere Safe!',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontSize: 15,
+                      color: kwhitecolors,
+                      fontWeight: FontWeight.normal,
+                      fontFamily: "Aeonik",
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20,),
+          SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.all(8.5),
             child: Container(
-              
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
               ),
-              height: 400,
+              height: 390,
               width: double.infinity,
               child: GridView.builder(
                 itemCount: 12,
@@ -255,7 +403,22 @@ class _ProceedscreenState extends State<Proceedscreen> {
                     child: Row(
                       children: [
                         Container(
-                        
+                          height: 60,
+                          width: 35,
+                          decoration: BoxDecoration(
+                            color: kblackcolor,
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.colorScheme.tertiary,
+                                blurRadius: 0.5,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(30),
+                              topLeft: Radius.circular(30),
+                            ),
+                          ),
                           child: Row(
                             children: [
                               Padding(
@@ -268,60 +431,49 @@ class _ProceedscreenState extends State<Proceedscreen> {
                                   ),
                                 ),
                               ),
-                          
                             ],
                           ),
+                        ),
+                        Container(
                           height: 60,
-                          width: 35,
+                          width: 130,
                           decoration: BoxDecoration(
+                            color: kblackcolor,
                             boxShadow: [
                               BoxShadow(
-                                blurStyle: BlurStyle.solid,
                                 color: kwhitecolors,
                                 blurRadius: 0.5,
                                 spreadRadius: 1,
                               ),
                             ],
-                            color: kblackcolor,
-                            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30,),topLeft: Radius.circular(30)),
+                            borderRadius: BorderRadius.only(
+                              bottomRight: Radius.circular(30),
+                              topRight: Radius.circular(30),
+                            ),
                           ),
-                        ),
-                        Container(
-                        
                           child: Row(
                             children: [
-                             
-                             Padding(
-                                padding: const EdgeInsets.only(bottom: 2,left: 20),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: 2,
+                                  left: 20,
+                                ),
                                 child: Text(
                                   overflow: TextOverflow.ellipsis,
-                                  mnemonicswords[index],
-                                  style: TextStyle(
+                                  mnemonicswords.length > index
+                                      ? mnemonicswords[index]
+                                      : '',
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontSize: 15,
                                     color: kwhitecolors,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
+                                    fontWeight: FontWeight.normal,
+                                    fontFamily: "Aeonik",
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          height: 60,
-                          width: 130,
-                          decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(
-                                blurStyle: BlurStyle.solid,
-                                color: kwhitecolors,
-                                blurRadius: 0.5,
-                                spreadRadius: 1,
-                              ),
-                            ],
-                            color: kblackcolor,
-                            borderRadius: BorderRadius.only(bottomRight: Radius.circular(30,),topRight: Radius.circular(30)),
-                          ),
                         ),
-                        
-
                       ],
                     ),
                   );
@@ -335,29 +487,27 @@ class _ProceedscreenState extends State<Proceedscreen> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: InkWell(
-                  onTap: () async {
-                    final WalletData = await Provider.of<Walletprovider>(
-                      listen: false,
+                  onTap: () {
+                    final walletProvider = Provider.of<WalletProvider>(
                       context,
+                      listen: false,
                     );
-                    final mnemonic = WalletData.usersWalletData?.mnemonic ?? "";
-                    print(mnemonic);
+                    // ← fixed: pendingMnemonic first
+                    final mnemonic = walletProvider.pendingMnemonic ??
+                        walletProvider.walletData?.mnemonic ??
+                        "";
                     if (mnemonic.isNotEmpty) {
                       Clipboard.setData(ClipboardData(text: mnemonic));
-                    showCustomSnackBar(context, "Copied to clipboard!");
-
-                    }else{
-                     showCustomSnackBar(context, "No mnemonics found");
-
+                      showCustomSnackBar(context, "Copied to clipboard!");
+                    } else {
+                      showCustomSnackBar(context, "No mnemonics found");
                     }
-
-                    
                   },
                   child: customContainer(
                     50,
                     200,
                     BoxDecoration(
-                      color: kdarkgraycolor,
+                      color: kblackcolor.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     Row(
@@ -380,14 +530,14 @@ class _ProceedscreenState extends State<Proceedscreen> {
               ),
             ],
           ),
-          SizedBox(height: 40),
+          SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: InkWell(
-             onTap: () => _goToNextPage(),
+              onTap: () => _goToNextPage(),
               child: customContainer(
-                50,
-                double.infinity,
+                45,
+                300,
                 BoxDecoration(
                   color: korangeColor,
                   borderRadius: BorderRadius.circular(25),

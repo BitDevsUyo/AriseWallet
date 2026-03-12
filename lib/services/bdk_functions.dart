@@ -1,31 +1,58 @@
 import 'package:bdk_flutter/bdk_flutter.dart';
+import 'package:bitdevs_project/core/cachemanager.dart';
 import 'package:bitdevs_project/utils/utils.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:uuid/uuid.dart';
 
-enum walletType { bip44, bip49, bip84, bip86 }
+enum WalletType { bip44, bip49, bip84, bip86 }
+
+class WalletInfo {
+  final Address address;
+  final BigInt balance;
+  final List<Map<String, dynamic>> transactions;
+  final WalletType type;
+  final Wallet wallet;
+
+  WalletInfo({
+    required this.address,
+    required this.balance,
+    required this.transactions,
+    required this.type,
+    required this.wallet,
+  });
+}
 
 class WalletService {
   static Blockchain? _electrumBlockchain;
-  static final _secureStorage = FlutterSecureStorage();
+  final CacheManager _cacheManager = CacheManager();
+  final Uuid _uuid = Uuid();
+
+  static Future<void> initBdk() async {
+    try {
+      await Mnemonic.create(WordCount.words12);
+      debugPrint('BDK native bindings initialized successfully');
+    } catch (e) {
+      debugPrint('BDK init failed: $e');
+      rethrow;
+    }
+  }
 
   Future<void> initBlockchain(Network network) async {
     if (_electrumBlockchain != null) return;
 
-    final electrumUrl = network == Network.Testnet
-        ? "ssl://electrum.blockstream.info:60002"
+    final electrumUrl = network == Network.testnet
+        ? "ssl://testnet.aranguren.org:51002"
         : "ssl://electrum.blockstream.info:50002";
-
     try {
       _electrumBlockchain = await Blockchain.create(
         config: BlockchainConfig.electrum(
           config: ElectrumConfig(
             url: electrumUrl,
             socks5: null,
-            retry: 3,
-            timeout: 5,
-            stopGap: 10,
-            validateDomain: true,
+            retry: 5,
+            timeout: 10,
+            stopGap: BigInt.from(10),
+            validateDomain: false,
           ),
         ),
       );
@@ -38,7 +65,7 @@ class WalletService {
   Future<Map<String, Descriptor>> _createDescriptorsForTypes({
     required Mnemonic mnemonics,
     required Network network,
-    required walletType typeOfWallet,
+    required WalletType typeOfWallet,
   }) async {
     final secretKey = await DescriptorSecretKey.create(
       network: network,
@@ -46,235 +73,403 @@ class WalletService {
     );
 
     switch (typeOfWallet) {
-      //Legacy addresses
-      case walletType.bip44:
+      case WalletType.bip44:
         final externalDescriptor = await Descriptor.newBip44(
           secretKey: secretKey,
           network: network,
-          keychain: KeychainKind.External,
+          keychain: KeychainKind.externalChain,
         );
         final internalDescriptor = await Descriptor.newBip44(
           secretKey: secretKey,
           network: network,
-          keychain: KeychainKind.Internal,
+          keychain: KeychainKind.internalChain,
         );
         return {"internal": internalDescriptor, "external": externalDescriptor};
-      //Wrapped SegWit addresses
-      case walletType.bip49:
+
+      case WalletType.bip49:
         final externalDescriptor = await Descriptor.newBip49(
           secretKey: secretKey,
           network: network,
-          keychain: KeychainKind.External,
+          keychain: KeychainKind.externalChain,
         );
         final internalDescriptor = await Descriptor.newBip49(
           secretKey: secretKey,
           network: network,
-          keychain: KeychainKind.Internal,
+          keychain: KeychainKind.internalChain,
         );
         return {"internal": internalDescriptor, "external": externalDescriptor};
-      // Native SegWit addresses
-      case walletType.bip84:
+
+      case WalletType.bip84:
         final externalDescriptor = await Descriptor.newBip84(
           secretKey: secretKey,
           network: network,
-          keychain: KeychainKind.External,
+          keychain: KeychainKind.externalChain,
         );
         final internalDescriptor = await Descriptor.newBip84(
           secretKey: secretKey,
           network: network,
-          keychain: KeychainKind.Internal,
+          keychain: KeychainKind.internalChain,
         );
         return {"internal": internalDescriptor, "external": externalDescriptor};
-      //Taproot address i.e(Segwit v1)
-      case walletType.bip86:
+
+      case WalletType.bip86:
         final externalDescriptor = await Descriptor.newBip86(
           secretKey: secretKey,
           network: network,
-          keychain: KeychainKind.External,
+          keychain: KeychainKind.externalChain,
         );
         final internalDescriptor = await Descriptor.newBip86(
           secretKey: secretKey,
           network: network,
-          keychain: KeychainKind.Internal,
+          keychain: KeychainKind.internalChain,
         );
         return {"internal": internalDescriptor, "external": externalDescriptor};
     }
   }
 
-  Future<Map<String, dynamic>> createBitcoinWallet({
+  Future<WalletInfo> _getWalletInfo({
+    required Mnemonic mnemonic,
     required Network network,
-    walletType typeofWallet = walletType.bip86,
-    WordCount wordCount = WordCount.Words12,
+    required WalletType type,
   }) async {
-    await initBlockchain(network);
-    final mnemonic = await Mnemonic.create(WordCount.Words12);
-    final printmnemonic = EncryptServices.encrypt(mnemonic.asString());
-    debugPrint(printmnemonic);
-
     final descriptor = await _createDescriptorsForTypes(
       mnemonics: mnemonic,
       network: network,
-      typeOfWallet: typeofWallet,
+      typeOfWallet: type,
     );
-    final externalDescriptor = descriptor['external'];
-    final internalDescriptor = descriptor['internal'];
 
     final wallet = await Wallet.create(
-      descriptor: externalDescriptor!,
+      descriptor: descriptor['external']!,
       network: network,
       databaseConfig: DatabaseConfig.memory(),
     );
-    await wallet.sync(_electrumBlockchain!);
-    debugPrint("wallet sync to the blockchain");
 
-    final mnemonicStr = mnemonic.toString();
-    final extDescStr = await externalDescriptor.asString();
-    final intDescStr = await internalDescriptor!.asString();
-
-    final encryptedMnemonic = EncryptServices.encrypt(mnemonicStr);
-    await _secureStorage.write(key: 'mnemonic', value: encryptedMnemonic);
-    await _secureStorage.write(key: 'descriptor_external', value: extDescStr);
-    await _secureStorage.write(key: 'descriptor_internal', value: intDescStr);
-    await _secureStorage.write(
-      key: 'wallet_type',
-      value: typeofWallet.toString(),
-    );
-    //getting the users wallet account balances
-    final balance = await wallet.getBalance();
-    final bitcoinConfirmedbal = balance.confirmed;
-    //getting the users wallet  address
-    final addressInfo = await wallet.getAddress(
+    await wallet.sync(blockchain: _electrumBlockchain!);
+    final balance = wallet.getBalance();
+    final addressInfo = wallet.getAddress(
       addressIndex: AddressIndex.lastUnused(),
     );
-    final bitcoinAddress = addressInfo.address;
-    //getting the users wallet account transactions histories
-    final txs = await wallet.listTransactions(true);
-    final bitcointxHistory = txs
+
+    final txs = wallet.listTransactions(includeRaw: true);
+    final txHistory = txs
         .map(
           (tx) => {
             'txid': tx.txid,
-            'received': tx.received,
-            'sent': tx.sent,
+            'received': tx.received.toString(),
+            'sent': tx.sent.toString(),
             'confirmationTime': tx.confirmationTime?.toString(),
+            'wallet_type': type.toString(),
           },
         )
         .toList();
-    return {
-      "mnemonic": mnemonicStr,
-      "bitcoin_address": bitcoinAddress,
-      'bitcoin_externaldescriptor': extDescStr,
-      'bitcoin_internaldescriptor': intDescStr,
-      "bitcoin_transactions_history": bitcointxHistory,
-      'bitcoin_bal': bitcoinConfirmedbal.toString(),
-    };
+
+    return WalletInfo(
+      address: addressInfo.address,
+      balance: balance.confirmed,
+      transactions: txHistory,
+      type: type,
+      wallet: wallet,
+    );
   }
 
+  Future<String> createWalletOffline({
+    required Network network,
+    WordCount wordCount = WordCount.words12,
+  }) async {
+    final mnemonic = await Mnemonic.create(wordCount);
+    final mnemonicStr = mnemonic.toString();
+    final walletId = _uuid.v4();
 
- Future<Map<String, dynamic>> loadStoredWallet({
-  required Network network,
-}) async {
-  await initBlockchain(network);
+    final encryptedMnemonic = EncryptServices.encrypt(mnemonicStr);
+    await _cacheManager.saveMnemonic(encryptedMnemonic, walletId);
+    await _cacheManager.saveWalletId(walletId);
+    await _cacheManager.saveActiveWalletId(walletId);
 
-  final encryptedMnemonic = await _secureStorage.read(key: 'mnemonic');
-  if (encryptedMnemonic == null) throw Exception("No wallet stored");
+    return mnemonicStr;
+  }
 
-  final mnemonicStr = EncryptServices.decrypt(encryptedMnemonic);
-  final mnemonic = await Mnemonic.fromString(mnemonicStr);
+  Future<void> saveWalletNameAndPasscode({
+    required String walletName,
+    required String passcode,
+  }) async {
+    final walletId = await _cacheManager.getActiveWalletId();
+    if (walletId == null) throw Exception("No active wallet");
+    final encryptedPasscode = EncryptServices.encrypt(passcode);
+    await _cacheManager.addWalletToList(walletId, walletName);
+    await _cacheManager.savePasscode(encryptedPasscode);
+    debugPrint("Added to list: $walletName for $walletId");
+  }
 
-  final typeStr = await _secureStorage.read(key: 'wallet_type');
-  final typeOfWallet = walletType.values.firstWhere(
-    (e) => e.toString() == typeStr,
-  );
+  Future<Map<String, dynamic>> syncWallet({required Network network}) async {
+    await initBlockchain(network);
 
-  final descriptor = await _createDescriptorsForTypes(
-    mnemonics: mnemonic,
-    network: network,
-    typeOfWallet: typeOfWallet,
-  );
+    final walletId = await _cacheManager.getActiveWalletId();
+    if (walletId == null) throw Exception("No active wallet");
 
-  final wallet = await Wallet.create(
-    descriptor: descriptor['external']!,
-    network: network,
-    databaseConfig: DatabaseConfig.memory(),
-  );
+    final encryptedMnemonic = await _cacheManager.getMnemonic(walletId);
+    if (encryptedMnemonic == null) {
+      throw Exception("No mnemonic for wallet: $walletId");
+    }
 
-  await wallet.sync(_electrumBlockchain!);
+    final mnemonicStr = EncryptServices.decrypt(encryptedMnemonic);
+    final mnemonic = await Mnemonic.fromString(mnemonicStr);
 
-  final balance = await wallet.getBalance();
-  final address = (await wallet.getAddress(
-    addressIndex: AddressIndex.lastUnused(),
-  )).address;
+    final bip44Info = await _getWalletInfo(
+      mnemonic: mnemonic,
+      network: network,
+      type: WalletType.bip44,
+    );
+    final bip49Info = await _getWalletInfo(
+      mnemonic: mnemonic,
+      network: network,
+      type: WalletType.bip49,
+    );
+    final bip84Info = await _getWalletInfo(
+      mnemonic: mnemonic,
+      network: network,
+      type: WalletType.bip84,
+    );
+    final bip86Info = await _getWalletInfo(
+      mnemonic: mnemonic,
+      network: network,
+      type: WalletType.bip86,
+    );
 
-  final txs = await wallet.listTransactions(true);
-  final history = txs
-      .map((tx) => {
-            'txid': tx.txid,
-            'received': tx.received,
-            'sent': tx.sent,
-            'confirmationTime': tx.confirmationTime?.toString(),
-          })
-      .toList();
+    final totalBalance =
+        bip44Info.balance +
+        bip49Info.balance +
+        bip84Info.balance +
+        bip86Info.balance;
 
-  return {
-    "wallet_active": true,
-    "mnemonic": mnemonicStr,
-    "bitcoin_address": address,
-    "bitcoin_balance": balance.confirmed.toString(),
-    "bitcoin_transactions_history": history,
-  };
-}
+    final allTransactions = [
+      ...bip44Info.transactions,
+      ...bip49Info.transactions,
+      ...bip84Info.transactions,
+      ...bip86Info.transactions,
+    ];
 
+    final walletList = await _cacheManager.getWalletList();
+    final walletEntry = walletList.firstWhere(
+      (w) => w['id'] == walletId,
+      orElse: () => {'id': walletId, 'name': ''},
+    );
+    final walletName = walletEntry['name'] as String? ?? '';
+    debugPrint("Wallet list: $walletList");
 
+    final result = {
+      "Id": walletId,
+      "walletName": walletName,
+      "mnemonic": mnemonicStr,
+      "total_balance": totalBalance.toString(),
+      "addresses": {
+        "bip44": bip44Info.address.asString(),
+        "bip49": bip49Info.address.asString(),
+        "bip84": bip84Info.address.asString(),
+        "bip86": bip86Info.address.asString(),
+      },
+      "balances": {
+        "bip44": bip44Info.balance.toString(),
+        "bip49": bip49Info.balance.toString(),
+        "bip84": bip84Info.balance.toString(),
+        "bip86": bip86Info.balance.toString(),
+      },
+      "all_transactions": allTransactions,
+    };
 
-  //Restoring wallet from mnemonics
+    await _cacheManager.saveWalletData(result, walletId);
+    await _cacheManager.saveTotalBalance(totalBalance.toString(), walletId);
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> loadStoredWallet({
+    required Network network,
+  }) async {
+    await initBlockchain(network);
+
+    final walletId = await _cacheManager.getActiveWalletId();
+    if (walletId == null) throw Exception("No active wallet");
+
+    final encryptedMnemonic = await _cacheManager.getMnemonic(walletId);
+    if (encryptedMnemonic == null) {
+      throw Exception("No mnemonic for wallet: $walletId");
+    }
+
+    final mnemonicStr = EncryptServices.decrypt(encryptedMnemonic);
+    final mnemonic = await Mnemonic.fromString(mnemonicStr);
+
+    final bip44Info = await _getWalletInfo(
+      mnemonic: mnemonic,
+      network: network,
+      type: WalletType.bip44,
+    );
+    final bip49Info = await _getWalletInfo(
+      mnemonic: mnemonic,
+      network: network,
+      type: WalletType.bip49,
+    );
+    final bip84Info = await _getWalletInfo(
+      mnemonic: mnemonic,
+      network: network,
+      type: WalletType.bip84,
+    );
+    final bip86Info = await _getWalletInfo(
+      mnemonic: mnemonic,
+      network: network,
+      type: WalletType.bip86,
+    );
+
+    final totalBalance =
+        bip44Info.balance +
+        bip49Info.balance +
+        bip84Info.balance +
+        bip86Info.balance;
+
+    final allTransactions = [
+      ...bip44Info.transactions,
+      ...bip49Info.transactions,
+      ...bip84Info.transactions,
+      ...bip86Info.transactions,
+    ];
+
+    final result = {
+      "Id": walletId,
+      "mnemonic": mnemonicStr,
+      "total_balance": totalBalance.toString(),
+      "addresses": {
+        "bip44": bip44Info.address.asString(),
+        "bip49": bip49Info.address.asString(),
+        "bip84": bip84Info.address.asString(),
+        "bip86": bip86Info.address.asString(),
+      },
+      "balances": {
+        "bip44": bip44Info.balance.toString(),
+        "bip49": bip49Info.balance.toString(),
+        "bip84": bip84Info.balance.toString(),
+        "bip86": bip86Info.balance.toString(),
+      },
+      "all_transactions": allTransactions,
+    };
+
+    await _cacheManager.saveWalletData(result, walletId);
+    await _cacheManager.saveTotalBalance(totalBalance.toString(), walletId);
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> switchAndLoadWallet({
+    required String walletId,
+    required Network network,
+  }) async {
+    await _cacheManager.saveActiveWalletId(walletId);
+    await _cacheManager.saveWalletId(walletId);
+    return await loadStoredWallet(network: network);
+  }
+
+  Future<List<Map<String, dynamic>>> getWalletList() async {
+    return await _cacheManager.getWalletList();
+  }
+
   Future<Map<String, dynamic>> restoreFromUserMnemonic({
     required String userMnemonic,
     required Network network,
-    walletType typeOfWallet = walletType.bip86,
   }) async {
     await initBlockchain(network);
 
     final mnemonic = await Mnemonic.fromString(userMnemonic.trim());
 
-    final descriptor = await _createDescriptorsForTypes(
-      mnemonics: mnemonic,
+    final bip44Info = await _getWalletInfo(
+      mnemonic: mnemonic,
       network: network,
-      typeOfWallet: typeOfWallet,
+      type: WalletType.bip44,
+    );
+    final bip49Info = await _getWalletInfo(
+      mnemonic: mnemonic,
+      network: network,
+      type: WalletType.bip49,
+    );
+    final bip84Info = await _getWalletInfo(
+      mnemonic: mnemonic,
+      network: network,
+      type: WalletType.bip84,
+    );
+    final bip86Info = await _getWalletInfo(
+      mnemonic: mnemonic,
+      network: network,
+      type: WalletType.bip86,
     );
 
-    final externalDescriptor = descriptor['external'];
-    final internalDescriptor = descriptor['internal'];
+    final totalBalance =
+        bip44Info.balance +
+        bip49Info.balance +
+        bip84Info.balance +
+        bip86Info.balance;
 
-    final wallet = await Wallet.create(
-      descriptor: externalDescriptor!,
-      network: network,
-      databaseConfig: DatabaseConfig.memory(),
-    );
+    final allTransactions = [
+      ...bip44Info.transactions,
+      ...bip49Info.transactions,
+      ...bip84Info.transactions,
+      ...bip86Info.transactions,
+    ];
 
-    await wallet.sync(_electrumBlockchain!);
+    final walletId = _uuid.v4();
+    final encryptedMnemonic = EncryptServices.encrypt(userMnemonic.trim());
 
-    final balance = await wallet.getBalance();
-    final address = (await wallet.getAddress(
-      addressIndex: AddressIndex.lastUnused(),
-    )).address;
+    await _cacheManager.saveMnemonic(encryptedMnemonic, walletId);
+    await _cacheManager.saveWalletId(walletId);
+    await _cacheManager.saveActiveWalletId(walletId);
 
-    final txs = await wallet.listTransactions(true);
-    final history = txs
-        .map(
-          (tx) => {
-            'txid': tx.txid,
-            'received': tx.received,
-            'sent': tx.sent,
-            'confirmationTime': tx.confirmationTime?.toString(),
-          },
-        )
-        .toList();
-
-    return {
-      "mnemonic": userMnemonic,
-      "bitcoin_address": address,
-      "bitcoin_transactions_history": history,
-      "bitcoin_bal": balance.confirmed.toString(),
+    final result = {
+      "Id": walletId,
+      "mnemonic": userMnemonic.trim(),
+      "total_balance": totalBalance.toString(),
+      "addresses": {
+        "bip44": bip44Info.address.asString(),
+        "bip49": bip49Info.address.asString(),
+        "bip84": bip84Info.address.asString(),
+        "bip86": bip86Info.address.asString(),
+      },
+      "balances": {
+        "bip44": bip44Info.balance.toString(),
+        "bip49": bip49Info.balance.toString(),
+        "bip84": bip84Info.balance.toString(),
+        "bip86": bip86Info.balance.toString(),
+      },
+      "all_transactions": allTransactions,
     };
+
+    await _cacheManager.saveWalletData(result, walletId);
+    return result;
   }
+
+  Future<Wallet> getWalletForAddress({
+    required String address,
+    required Network network,
+  }) async {
+    await initBlockchain(network);
+
+    final walletId = await _cacheManager.getActiveWalletId();
+    if (walletId == null) throw Exception("No active wallet");
+
+    final encryptedMnemonic = await _cacheManager.getMnemonic(walletId);
+    if (encryptedMnemonic == null) throw Exception("No mnemonic stored");
+
+    final mnemonicStr = EncryptServices.decrypt(encryptedMnemonic);
+    final mnemonic = await Mnemonic.fromString(mnemonicStr);
+
+    for (var type in WalletType.values) {
+      final info = await _getWalletInfo(
+        mnemonic: mnemonic,
+        network: network,
+        type: type,
+      );
+      if (info.address == address) {
+        return info.wallet;
+      }
+    }
+
+    throw Exception("Address not found in any wallet type");
+  }
+
+  /*Future<String> sendTransaction({...}) async { ... }*/
 }
