@@ -1,9 +1,6 @@
 import { Text, View, TouchableOpacity, ImageBackground, Alert } from 'react-native'
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import styles from './styles/homeStyles';
-import React, { useState } from 'react';
-import { createWallet } from './src/utils/wallet';
-import 'react-native-get-random-values';
 
 
 
