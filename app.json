@@ -1,8 +1,8 @@
 {
   "expo": {
-    "scheme": "bitdevwallet",
-    "name": "bitdevwallet",
-    "slug": "bitdevwallet",
+    "scheme": "AriseWallet",
+    "name": "AriseWallet",
+    "slug": "arisewallet",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -28,6 +28,13 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a68d1422-b84d-484d-a55d-2bff5452e22a"
+      }
+    },
+    "owner": "bitdevs-uyo"
   }
 }
