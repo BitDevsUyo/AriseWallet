@@ -1,8 +1,8 @@
 {
   "expo": {
-    "scheme": "bitdevwallet",
-    "name": "ArizeWallet",
-    "slug": "bitdevwallet",
+    "scheme": "AriseWallet",
+    "name": "AriseWallet",
+    "slug": "arisewallet",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/bitcoin.png",
@@ -37,9 +37,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "3fa9d5a2-7909-41e7-a685-f11fa2d29bc5"
+        "projectId": "a68d1422-b84d-484d-a55d-2bff5452e22a"
       }
     },
-    "owner": "ohotuowo-morgan"
+    "owner": "bitdevs-uyo"
   }
 }
