@@ -1,17 +1,17 @@
 {
   "expo": {
     "scheme": "bitdevwallet",
-    "name": "bitdevwallet",
+    "name": "ArizeWallet",
     "slug": "bitdevwallet",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/bitcoin.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FF6B00"
     },
     "ios": {
       "supportsTablet": true,
@@ -22,8 +22,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/bitcoin.png",
+        "backgroundColor": "#FF6B00"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.ohotuowomorgan.bitdevwallet"
