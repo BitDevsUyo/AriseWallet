@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "scheme": "AriseWallet",
+    "name": "AriseWallet",
+    "slug": "arisewallet",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/bitcoin.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF6B00"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ohotuowomorgan.bitdevwallet",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Arise Wallet uses Face ID to securely authenticate and unlock your Bitcoin wallet."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/bitcoin.png",
+        "backgroundColor": "#FF6B00"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.ohotuowomorgan.bitdevwallet"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a68d1422-b84d-484d-a55d-2bff5452e22a"
+      }
+    },
+    "owner": "bitdevs-uyo"
+  }
+}
