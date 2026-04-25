@@ -23,7 +23,7 @@ const _layout = () => {
                 title: '', 
                 headerTitle: () =>  <View style={{ flex: 1, alignItems: "center", justifyContent: 'center' }}><HeaderIndicator active={1}/></View>, 
                 headerRight: () => (
-                    <TouchableOpacity style={styles.next} onPress={() => router.push("/recovery")} >
+                    <TouchableOpacity style={styles.next} onPress={() => router.push("/success")} >
                         <Text style={{ color: "#fff", fontSize: 16 }}>Next</Text>
                     </TouchableOpacity>)
             }} />

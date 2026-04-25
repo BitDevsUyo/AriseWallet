@@ -10,6 +10,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
     "bdk-rn": "^0.30.0",
     "bip39": "^3.1.0",
     "bitcoinjs-lib": "^7.0.0",
@@ -18,6 +19,7 @@
     "expo-clipboard": "~8.0.7",
     "expo-constants": "~18.0.13",
     "expo-dev-client": "~6.0.17",
+    "expo-file-system": "~19.0.21",
     "expo-linking": "~8.0.8",
     "expo-local-authentication": "~17.0.7",
     "expo-router": "~6.0.8",
@@ -29,8 +31,12 @@
     "react-native": "0.81.5",
     "react-native-get-random-values": "~1.11.0",
     "react-native-otp-textinput": "^1.1.7",
+    "react-native-qrcode-svg": "^6.3.21",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
+    "react-native-svg": "15.12.1",
+    "react-native-toast-message": "^2.3.3",
+    "typescript": "~5.9.2",
     "zod": "^4.3.5",
     "zustand": "^5.0.9"
   },

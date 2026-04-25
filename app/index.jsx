@@ -2,17 +2,26 @@ import { StyleSheet,  View, Image, } from 'react-native'
 import React from 'react'
 import { useEffect } from 'react'
 import { useRouter } from 'expo-router'
+import { useWalletStore } from '../src/store/walletStore'
 
 const index = () => {
   const router = useRouter();
 
+  const walletInstance = useWalletStore((state) => state.activeWallet?.walletInstance);
+
   useEffect(()=> {
     const redirect = setTimeout(()=> {
-      router.replace('/welcome');
+      
+      if (walletInstance) {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/welcome');
+      }
+
     }, 2500);
 
     return () => clearTimeout(redirect);
-  }, [router]);
+  }, [router, walletInstance]);
 
   return (
     <View style={styles.container}>

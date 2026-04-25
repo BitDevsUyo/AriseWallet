@@ -114,9 +114,50 @@ const styles = StyleSheet.create({
         lineHeight: 24,
         color: '#fff',
     },
-    choiceBox:{
+    choiceBox: {
         gap: 20,
-    }
+    },
+
+    // Modal
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'flex-end', // Pushes the modal to the bottom
+        backgroundColor: 'rgba(0, 0, 0, 0.6)', // Dark semi-transparent background
+    },
+    modalContent: {
+        backgroundColor: '#121212', // Match your dark theme background
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        paddingTop: 20,
+        paddingHorizontal: 20,
+        paddingBottom: 40,
+        minHeight: 300,
+    },
+    closeButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#2A2A2A',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    closeButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    modalChoiceBox: {
+        gap: 15,
+    },
+    modalBiometricsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#1E1E1E', // Slightly lighter than modal bg
+        padding: 16,
+        borderRadius: 16,
+    },
 
 });
 

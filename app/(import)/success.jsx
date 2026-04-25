@@ -1,10 +1,22 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity, Switch } from 'react-native';
 import { spacing, colors, radii } from '../../src/theme';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+import { useWalletStore } from '../../src/store/walletStore';
 
 const success = () => {
     const router = useRouter();
+
+    const activeWallet = useWalletStore((state) => state.activeWallet);
+    useEffect(() => {
+        console.log("WALLET RECOVERY SUCCESS");
+        console.log("Wallet ID:   ", activeWallet.id);
+        console.log("Wallet Name: ", activeWallet.name);
+        console.log("BTC Address: ", activeWallet.address);
+        console.log("Balance:     ", activeWallet.balance, "sats");
+    }, []);
+
     const [isEnabled, setIsEnabled] = useState(false);
 
     return (
@@ -24,7 +36,7 @@ const success = () => {
 
                 <TouchableOpacity
                     style={styles.primaryButton}
-                    onPress={() => router.push('/#')}
+                    onPress={() => router.replace('(tabs)')}
                 >
                     <Text style={styles.primaryButtonText}>Get Started</Text>
                 </TouchableOpacity>

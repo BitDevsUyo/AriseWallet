@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Text, View, TouchableOpacity, ImageBackground, Alert, ActivityIndicator } from 'react-native'
+import { Text, View, TouchableOpacity, ImageBackground, ActivityIndicator } from 'react-native'
 import { Link, useRouter } from 'expo-router';
 import styles from './styles/homeStyles';
 
 import {useWalletStore} from '../src/store/walletStore';
 import { generateNewMnemonics } from '../src/utils/bdk';
+import Toast from 'react-native-toast-message';
 
 
 const Home = () => {
@@ -27,7 +28,11 @@ const Home = () => {
             router.push('/recovery')
         }catch (error){
             console.error("Failed to generate mnemonic:", error);
-            Alert.alert("Error", "Could not generate recovery phrase.");
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'Could not generate seed phrase please try again.',
+            })
             setLoading(false);
         }
     }
@@ -58,7 +63,6 @@ const Home = () => {
 
                 <TouchableOpacity
                     style={styles.primaryButton}
-                    // onPress={() => router.push("/recovery")}
                     onPress={handleCreateWallet}
                     disabled={loading}
                 >

@@ -23,49 +23,11 @@ const success = () => {
                     </View>
 
 
-                    {/* <View style={styles.choiceBox}>
-                        <View style={styles.biometrics}>
-                            <View style={styles.enable}>
-                                <Image source={require('../assets/scan-face.png')} style={styles.scanImg} />
-                                <Text style={styles.biometricText}>Enable biometrics</Text>
-                                {/* {isEnabled ? "On" : "Off"} */}
-                            {/* </View>
-
-                            <Switch
-                                trackColor={{ false: "#767577", true: "#4cd964" }}
-                                thumbColor={isEnabled ? "#fff" : "#f4f3f4"}
-                                ios_backgroundColor="#3e3e3e"
-                                onValueChange={toggleSwitch}
-                                value={isEnabled}
-                                style={styles.switch}
-                            />
-
-                        </View>
-
-                        <View style={styles.biometrics}>
-                            <View style={styles.enable}>
-                                <Image source={require('../assets/password.png')} style={styles.scanImg} />
-                                <Text style={styles.biometricText}>Continue with passcode</Text>
-                                {/* {isEnabled ? "On" : "Off"} */}
-                            {/* </View>
-
-                            <Switch
-                                trackColor={{ false: "#767577", true: "#4cd964" }}
-                                thumbColor={isEnabled ? "#fff" : "#f4f3f4"}
-                                ios_backgroundColor="#3e3e3e"
-                                onValueChange={toggleSwitch}
-                                value={isEnabled}
-                                style={styles.switch}
-                            />
-
-                        </View>
-                    </View>  */}
-
                 </View>
 
                 <TouchableOpacity
                     style={styles.primaryButton}
-                    onPress={() => router.push('/#')}
+                    onPress={() => router.replace('(tabs)')}
                 >
                     <Text style={styles.primaryButtonText}>Get Started</Text>
                 </TouchableOpacity>

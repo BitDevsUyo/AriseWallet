@@ -5,14 +5,25 @@ import React, { useEffect, useState, useRef } from 'react'
 import styles from '../styles/importStyles'
 import { FontAwesome5 } from '@expo/vector-icons';
 
+import { buildAndSyncWallets } from '../../src/utils/bdk';
+import { useWalletStore } from '../../src/store/walletStore';
+import Toast from 'react-native-toast-message'
+
 
 
 const Import = () => {
   const router = useRouter();
 
+  const [phrase, setPhrase] = React.useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [firstPin, setFirstPin] = useState('');
   const spinValue = useRef(new Animated.Value(0)).current;
+
+  const {
+    updateOnboarding,
+    finalizeAndSaveWallet,
+    setWalletSession
+  } = useWalletStore((state) => state);
 
   useEffect(() => {
     if (isProcessing) {
@@ -34,19 +45,68 @@ const Import = () => {
     outputRange: ['0deg', '360deg'],
   });
 
-  const handleLoad = () => {
+
+  const handleLoad = async () => {
+    const cleanPhrase = phrase.trim();
+
+    if (!cleanPhrase) {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Phrase',
+        text2: 'Please enter your recovery phrase to continue.',
+      })
+      return;
+    }
+
+    const wordCount = cleanPhrase.split(/\s+/).length;
+    if (wordCount !== 12 && wordCount !== 24) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Length',
+        text2: `You entered ${wordCount} words. It must be 12 words.`,
+      })
+      return;
+    }
 
     setIsProcessing(true);
 
-    setTimeout(() => {
+    updateOnboarding('mnemonic', cleanPhrase);
+    updateOnboarding('name', 'Imported Wallet'); 
 
-      setIsProcessing(false);
-      router.replace('/secure');
-      
-    }, 5000);
+    setTimeout(async () => {
+      try {
+        const { activeWalletInstance, vaults, totalBalance, receiveAddress } = await buildAndSyncWallets(cleanPhrase);
+
+        await finalizeAndSaveWallet();
+        setWalletSession(activeWalletInstance, vaults, totalBalance, receiveAddress);
+
+        setIsProcessing(false);
+
+        router.replace('/secure');
+
+      } catch (error) {
+        console.error("Wallet import failed:", error);
+        setIsProcessing(false);
+
+        const errString = String(error).toLowerCase();
+
+        if (errString.includes('electrum') || errString.includes('network') || errString.includes('os error')) {
+          Toast.show({
+            type: 'error',
+            text1: 'Network Error',
+            text2: 'Could not import wallet. Check your Wi-Fi connection and try again.',
+          });
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: 'Invalid Recovery Phrase',
+            text2: 'Check your spelling and word order, then try again.',
+          });
+        }
+      }
+    }, 150);
   }
 
-  const [phrase, setPhrase] = React.useState("");
   return (
     <View style={styles.container}>
 
@@ -67,7 +127,6 @@ const Import = () => {
 
         <TouchableOpacity
           style={styles.primaryButton}
-          // onPress={() => router.push("/secure")}
           onPress={handleLoad}
         >
           <Text style={styles.primaryButtonText}>Import Recovery Phrase</Text>

@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, } from 'react-native'
 import { PrimaryButton } from '../../src/components/PrimaryButton'
 import { colors, spacing, radii } from '../../src/theme'
 import { Link, useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react'
 
 import { useWalletStore } from '../../src/store/walletStore';
+import Toast from 'react-native-toast-message';
 
 const confirm = () => {
   const router = useRouter();
@@ -17,6 +18,8 @@ const confirm = () => {
   const [selectedWord, setSelectedWord] = useState(null);
 
   const setupQuiz = (indexToAvoid = -1) => {
+    if (!mnemonic) return;
+
     const wordsArray = mnemonic.split(' ');
 
     let randomTarget;
@@ -27,12 +30,13 @@ const confirm = () => {
     setTargetIndex(randomTarget);
     const correctWord = wordsArray[randomTarget];
 
-    let decoys = wordsArray.filter((w, i) => i !== randomTarget);
-    decoys = decoys.sort(() => 0.5 - Math.random()).slice(0, 4);
+    let uniqueDecoys = Array.from(new Set(wordsArray.filter(w => w !== correctWord)));
 
-    const allOptions = [correctWord, ...decoys].sort(() => 0.5 - Math.random());
+    uniqueDecoys = uniqueDecoys.sort(() => 0.5 - Math.random()).slice(0, 4);
+
+    const allOptions = [correctWord, ...uniqueDecoys].sort(() => 0.5 - Math.random());
     setOptions(allOptions);
-    setSelectedWord(null); 
+    setSelectedWord(null);
   };
 
   useEffect(() => {
@@ -53,12 +57,16 @@ const confirm = () => {
     if (selectedWord === correctWord) {
       if (step === 1) {
         setStep(2);
-        setupQuiz(targetIndex); 
+        setupQuiz(targetIndex);
       } else {
         router.push("/nameWallet");
       }
     } else {
-      Alert.alert("Incorrect", "That is not the correct word. Please try again.");
+      Toast.show({
+        type: 'error',
+        text1: 'Incorrect',
+        text2: 'That is not the correct word. Please try again.',
+      })
       setSelectedWord(null);
     }
   };
@@ -100,7 +108,6 @@ const confirm = () => {
         title={"Continue"}
         disabled={!selectedWord}
         onPress={handleContinue}
-      // onPress={() => router.push("/nameWallet")}
       />
 
     </View>

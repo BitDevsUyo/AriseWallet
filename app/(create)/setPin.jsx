@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Alert, Modal, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Modal, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
 import OTPTextView from 'react-native-otp-textinput';
 
@@ -8,6 +8,7 @@ import { useWalletStore } from '../../src/store/walletStore';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { buildAndSyncWallets } from '../../src/utils/bdk';
+import Toast from 'react-native-toast-message';
 
 export default function Passcode() {
   const router = useRouter();
@@ -19,13 +20,12 @@ export default function Passcode() {
     onboarding
   } = useWalletStore((state) => state);
 
-  const otpInput = useRef(null); 
+  const otpInput = useRef(null);
   const [pin, setPin] = useState('');
   const [isConfirming, setIsConfirming] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [firstPin, setFirstPin] = useState('');
 
-  // Spinner Animation Setup 
   const spinValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function Passcode() {
       Animated.loop(
         Animated.timing(spinValue, {
           toValue: 1,
-          duration: 1000, 
+          duration: 1000,
           easing: Easing.linear,
           useNativeDriver: true,
         })
@@ -58,31 +58,49 @@ export default function Passcode() {
       otpInput.current.clear();
     } else {
       if (pin === firstPin) {
+
         updateOnboarding('passcode', pin);
 
         setIsProcessing(true);
 
-        // Timeout to let UI render before BDK blocks the thread
         setTimeout(async () => {
           try {
             const mnemonicToUse = onboarding.mnemonic;
-            const { activeWalletInstance, totalBalance, receiveAddress } = await buildAndSyncWallets(mnemonicToUse);
+            const { activeWalletInstance, vaults, totalBalance, receiveAddress } = await buildAndSyncWallets(mnemonicToUse);
 
             await finalizeAndSaveWallet();
-            setWalletSession(activeWalletInstance, totalBalance, receiveAddress);
+            setWalletSession(activeWalletInstance, vaults, totalBalance, receiveAddress);
 
             setIsProcessing(false);
-            router.push('/protectWallet'); 
+            router.push('/protectWallet');
 
           } catch (error) {
             console.error("Wallet creation failed:", error);
-            Alert.alert('Error', 'Failed to build wallet. Please try again.');
             setIsProcessing(false);
+
+            const errString = String(error).toLowerCase();
+            if (errString.includes('electrum') || errString.includes('network') || errString.includes('os error')) {
+              Toast.show({
+                type: 'error',
+                text1: 'Network Error',
+                text2: 'Could not connect to the blockchain. Check your Wi-Fi.',
+              });
+            } else {
+              Toast.show({
+                type: 'error',
+                text1: 'Creation Failed',
+                text2: 'Something went wrong saving your wallet. Please try again.',
+              });
+            }            
           }
         }, 150);
 
       } else {
-        Alert.alert('Error', 'Passcodes do not match. Please try again.');
+        Toast.show({
+          type: 'error',
+          text1: 'Passcode Mismatch',
+          text2: 'Passcodes do not match. Please try again.',
+        })
         setIsConfirming(false);
         setFirstPin('');
         setPin('');
@@ -130,17 +148,17 @@ export default function Passcode() {
       <Modal visible={isProcessing} transparent={true} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            
+
             <View style={styles.spinnerContainer}>
               <View style={styles.iconCenter}>
                 <FontAwesome5 name="bitcoin" size={26} color="#ffffff" />
               </View>
 
-              <Animated.View 
+              <Animated.View
                 style={[
-                  styles.thinSpinner, 
+                  styles.thinSpinner,
                   { transform: [{ rotate: spin }] }
-                ]} 
+                ]}
               />
             </View>
 
@@ -148,7 +166,7 @@ export default function Passcode() {
             <Text style={styles.modalSubText}>
               This may take a few seconds. Please don't{'\n'}close the app
             </Text>
-            
+
           </View>
         </View>
       </Modal>
